@@ -1,0 +1,81 @@
+@host = http://localhost:5080
+
+### Справочник городов (GET)
+GET {{host}}/api/delivery/cities
+
+### Тарифы (GET)
+GET {{host}}/api/delivery/tariffs
+
+### Расстояние между городами (GET)
+GET {{host}}/api/delivery/distance?from=Москва&to=Нижний Новгород
+
+### Расчёт доставки, экспресс (POST)
+POST {{host}}/api/delivery/calculate
+Content-Type: application/json
+
+{
+  "fromCity": "Москва",
+  "toCity": "Нижний Новгород",
+  "weight": 10,
+  "length": 40,
+  "width": 30,
+  "height": 20,
+  "type": "express",
+  "insurance": false
+}
+
+### Расчёт со страховкой и скидкой за вес (POST)
+POST {{host}}/api/delivery/calculate
+Content-Type: application/json
+
+{
+  "fromCity": "Москва",
+  "toCity": "Казань",
+  "weight": 60,
+  "length": 80,
+  "width": 60,
+  "height": 50,
+  "type": "standard",
+  "insurance": true
+}
+
+### Расчёт с конвертацией в доллары (POST)
+POST {{host}}/api/delivery/calculate
+Content-Type: application/json
+
+{
+  "fromCity": "Москва",
+  "toCity": "Санкт-Петербург",
+  "weight": 5,
+  "type": "standard",
+  "currency": "USD"
+}
+
+### Ошибка: одинаковые города (POST, ожидается 400)
+POST {{host}}/api/delivery/calculate
+Content-Type: application/json
+
+{
+  "fromCity": "Москва",
+  "toCity": "Москва",
+  "weight": 5,
+  "type": "standard"
+}
+
+### Оформление заказа (POST)
+POST {{host}}/api/orders
+Content-Type: application/json
+
+{
+  "customerName": "Иван Петров",
+  "fromCity": "Москва",
+  "toCity": "Нижний Новгород",
+  "weight": 10,
+  "type": "express"
+}
+
+### Список заказов (GET)
+GET {{host}}/api/orders
+
+### История расчётов (GET)
+GET {{host}}/api/delivery/history

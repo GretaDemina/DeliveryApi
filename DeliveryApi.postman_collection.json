@@ -1,0 +1,737 @@
+{
+  "info": {
+    "name": "DeliveryApi — Практика №4",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080"
+    },
+    {
+      "key": "orderId",
+      "value": ""
+    },
+    {
+      "key": "calculatedAt",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "01 Справочник городов",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/delivery/cities",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "delivery",
+            "cities"
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));",
+              "pm.test('Время < 2000 мс',()=>pm.expect(pm.response.responseTime).to.be.below(2000));",
+              "pm.test('Проверка JSON',()=>{const b=pm.response.json(); pm.expect(b).to.have.length(10); pm.expect(b.some(x=>x.name==='Москва')).to.be.true;});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "02 Тарифы",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/delivery/tariffs",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "delivery",
+            "tariffs"
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));",
+              "pm.test('Время < 2000 мс',()=>pm.expect(pm.response.responseTime).to.be.below(2000));",
+              "pm.test('Проверка JSON',()=>{const b=pm.response.json(); pm.expect(b.baseFee).to.eql(250); pm.expect(b.expressCoef).to.eql(1.5);});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "03 Расстояние",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/delivery/distance?from=Москва&to=Нижний Новгород",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "delivery",
+            "distance"
+          ],
+          "query": [
+            {
+              "key": "from",
+              "value": "Москва"
+            },
+            {
+              "key": "to",
+              "value": "Нижний Новгород"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));",
+              "pm.test('Время < 2000 мс',()=>pm.expect(pm.response.responseTime).to.be.below(2000));",
+              "pm.test('Проверка JSON',()=>{const b=pm.response.json(); pm.expect(b.distanceKm).to.eql(457); pm.expect(b.straightKm).to.eql(397.1);});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "04 Неизвестный город",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/delivery/distance?from=Москва&to=Несуществующий город",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "delivery",
+            "distance"
+          ],
+          "query": [
+            {
+              "key": "from",
+              "value": "Москва"
+            },
+            {
+              "key": "to",
+              "value": "Несуществующий город"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 404',()=>pm.response.to.have.status(404));",
+              "pm.test('Время < 2000 мс',()=>pm.expect(pm.response.responseTime).to.be.below(2000));",
+              "pm.test('Проверка JSON',()=>{const b=pm.response.json(); pm.expect(b.error).to.eql('Один из городов не найден в справочнике');});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "05 Экспресс",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/delivery/calculate",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "delivery",
+            "calculate"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"fromCity\": \"Москва\",\n  \"toCity\": \"Нижний Новгород\",\n  \"weight\": 10,\n  \"type\": \"express\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));",
+              "pm.test('Время < 2000 мс',()=>pm.expect(pm.response.responseTime).to.be.below(2000));",
+              "pm.test('Проверка JSON',()=>{const b=pm.response.json(); pm.expect(b.cost).to.eql(737); pm.expect(b.days).to.eql(1); pm.expect(b.type).to.eql('express'); pm.collectionVariables.set('calculatedAt',b.calculatedAt);});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "06 Стандарт",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/delivery/calculate",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "delivery",
+            "calculate"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"fromCity\": \"Москва\",\n  \"toCity\": \"Нижний Новгород\",\n  \"weight\": 10,\n  \"type\": \"standard\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));",
+              "pm.test('Время < 2000 мс',()=>pm.expect(pm.response.responseTime).to.be.below(2000));",
+              "pm.test('Проверка JSON',()=>{const b=pm.response.json(); pm.expect(b.cost).to.eql(491); pm.expect(b.days).to.eql(2);});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "07 Скидка и страховка",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/delivery/calculate",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "delivery",
+            "calculate"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"fromCity\": \"Москва\",\n  \"toCity\": \"Казань\",\n  \"weight\": 60,\n  \"length\": 80,\n  \"width\": 60,\n  \"height\": 50,\n  \"type\": \"standard\",\n  \"insurance\": true\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));",
+              "pm.test('Время < 2000 мс',()=>pm.expect(pm.response.responseTime).to.be.below(2000));",
+              "pm.test('Проверка JSON',()=>{const b=pm.response.json(); pm.expect(b.cost).to.eql(1965); pm.expect(b.discount).to.eql(214); pm.expect(b.insuranceCost).to.eql(38.52);});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "08 Объёмный вес",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/delivery/calculate",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "delivery",
+            "calculate"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"fromCity\": \"Москва\",\n  \"toCity\": \"Нижний Новгород\",\n  \"weight\": 1,\n  \"type\": \"express\",\n  \"length\": 50,\n  \"width\": 50,\n  \"height\": 40\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));",
+              "pm.test('Время < 2000 мс',()=>pm.expect(pm.response.responseTime).to.be.below(2000));",
+              "pm.test('Проверка JSON',()=>{const b=pm.response.json(); pm.expect(b.chargeableWeight).to.eql(20); pm.expect(b.cost).to.eql(1099);});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "09 Нулевой вес",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/delivery/calculate",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "delivery",
+            "calculate"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"fromCity\": \"Москва\",\n  \"toCity\": \"Нижний Новгород\",\n  \"weight\": 0,\n  \"type\": \"express\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 400',()=>pm.response.to.have.status(400));",
+              "pm.test('Время < 2000 мс',()=>pm.expect(pm.response.responseTime).to.be.below(2000));",
+              "pm.test('Проверка JSON',()=>{const b=pm.response.json(); pm.expect(b.errors.Weight).to.include('Вес должен быть больше нуля');});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "10 Одинаковые города",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/delivery/calculate",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "delivery",
+            "calculate"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"fromCity\": \"Москва\",\n  \"toCity\": \"Москва\",\n  \"weight\": 10,\n  \"type\": \"express\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 400',()=>pm.response.to.have.status(400));",
+              "pm.test('Время < 2000 мс',()=>pm.expect(pm.response.responseTime).to.be.below(2000));",
+              "pm.test('Проверка JSON',()=>{const b=pm.response.json(); pm.expect(b.error).to.eql('Города отправления и назначения должны различаться');});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "11 Неизвестный пункт назначения",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/delivery/calculate",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "delivery",
+            "calculate"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"fromCity\": \"Москва\",\n  \"toCity\": \"Неизвестный\",\n  \"weight\": 10,\n  \"type\": \"express\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 400',()=>pm.response.to.have.status(400));",
+              "pm.test('Время < 2000 мс',()=>pm.expect(pm.response.responseTime).to.be.below(2000));",
+              "pm.test('Проверка JSON',()=>{const b=pm.response.json(); pm.expect(b.error).to.include('не найден в справочнике');});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "12 Конвертация USD",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/delivery/calculate",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "delivery",
+            "calculate"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"fromCity\": \"Москва\",\n  \"toCity\": \"Санкт-Петербург\",\n  \"weight\": 5,\n  \"type\": \"standard\",\n  \"currency\": \"USD\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));",
+              "pm.test('Время < 7000 мс',()=>pm.expect(pm.response.responseTime).to.be.below(7000));",
+              "pm.test('Проверка JSON',()=>{const b=pm.response.json(); pm.expect(b.cost).to.eql(398); pm.expect(b.days).to.eql(3); if(b.convertedCost===null){pm.expect(b.warning).to.be.a('string');}else{pm.expect(b.convertedCurrency).to.eql('USD');pm.expect(b.convertedCost).to.be.above(0);}});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "13 История расчётов",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/delivery/history",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "delivery",
+            "history"
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));",
+              "pm.test('Время < 2000 мс',()=>pm.expect(pm.response.responseTime).to.be.below(2000));",
+              "pm.test('Проверка JSON',()=>{const b=pm.response.json(); pm.expect(b.some(x=>x.calculatedAt===pm.collectionVariables.get('calculatedAt')&&x.cost===737)).to.be.true;});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "14 Создание заказа",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/orders",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "orders"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"fromCity\": \"Москва\",\n  \"toCity\": \"Нижний Новгород\",\n  \"weight\": 10,\n  \"type\": \"express\",\n  \"customerName\": \"Тестовый клиент\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 201',()=>pm.response.to.have.status(201));",
+              "pm.test('Время < 2000 мс',()=>pm.expect(pm.response.responseTime).to.be.below(2000));",
+              "pm.test('Проверка JSON',()=>{const b=pm.response.json(); pm.expect(b.id).to.be.a('number'); pm.expect(b.status).to.eql('Создан'); pm.expect(b.result.cost).to.eql(737); pm.expect(pm.response.headers.get('Location')).to.include('/api/orders/'+b.id); pm.collectionVariables.set('orderId',String(b.id));});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "15 Список заказов",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/orders",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "orders"
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));",
+              "pm.test('Время < 2000 мс',()=>pm.expect(pm.response.responseTime).to.be.below(2000));",
+              "pm.test('Проверка JSON',()=>{const b=pm.response.json(); pm.expect(b.some(x=>String(x.id)===pm.collectionVariables.get('orderId'))).to.be.true;});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "16 Заказ по ID",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/orders/{{orderId}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "orders",
+            "{{orderId}}"
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));",
+              "pm.test('Время < 2000 мс',()=>pm.expect(pm.response.responseTime).to.be.below(2000));",
+              "pm.test('Проверка JSON',()=>{const b=pm.response.json(); pm.expect(String(b.id)).to.eql(pm.collectionVariables.get('orderId')); pm.expect(b.result.cost).to.eql(737);});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "17 Несуществующий заказ",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/orders/2147483647",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "orders",
+            "2147483647"
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 404',()=>pm.response.to.have.status(404));",
+              "pm.test('Время < 2000 мс',()=>pm.expect(pm.response.responseTime).to.be.below(2000));",
+              "pm.test('Проверка JSON',()=>{const b=pm.response.json(); pm.expect(b.error).to.eql('Заказ №2147483647 не найден');});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "18 Заказ без имени",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/orders",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "orders"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"fromCity\": \"Москва\",\n  \"toCity\": \"Нижний Новгород\",\n  \"weight\": 10,\n  \"type\": \"express\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 400',()=>pm.response.to.have.status(400));",
+              "pm.test('Время < 2000 мс',()=>pm.expect(pm.response.responseTime).to.be.below(2000));",
+              "pm.test('Проверка JSON',()=>{const b=pm.response.json(); pm.expect(b.errors.CustomerName).to.include('Укажите имя клиента');});"
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}
